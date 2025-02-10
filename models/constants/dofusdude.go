@@ -3,7 +3,7 @@ package constants
 import amqp "github.com/kaellybot/kaelly-amqp"
 
 const (
-	DofusDudeGame              = "dofus3beta"
+	DofusDudeGame              = "dofus3"
 	DofusDudeDefaultLanguage   = "en"
 	DofusDudeAlmanaxDateFormat = "2006-01-02"
 	DofusDudeAlmanaxSizeLimit  = 35
