@@ -61,7 +61,7 @@ func GetSupportedTypeEnums() []string {
 		"rhineetle-harnesses",
 		"seemyool-harnesses",
 		"shoulder-pads",
-		"wings",
+		"wing",
 	}
 }
 
