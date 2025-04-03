@@ -10,6 +10,5 @@ func Int64ToInt32(value int64) (int32, error) {
 		return 0, fmt.Errorf("value %d overflows int32 range", value)
 	}
 
-	//nolint:gosec // G115: integer overflow checked below.
 	return int32(value), nil
 }
