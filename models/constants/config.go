@@ -69,7 +69,7 @@ const (
 	defaultRedisUser           = ""
 	defaultRedisPassword       = ""
 	defaultRedisCacheRetention = 60 * time.Minute
-	defaultRedisCacheSize      = 1000
+	defaultRedisCacheSize      = 1024
 	defaultAlmanaxCronTab      = "1 0 0 * * *"
 	defaultUpdateSetCronTab    = "0 0 2 * * *"
 	defaultDofusDudeTimeout    = 10 * time.Second

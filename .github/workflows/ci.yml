@@ -114,7 +114,7 @@ jobs:
               --set secrets.REDIS_USER="${{ secrets.REDIS_USER }}" \
               --set secrets.REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
               --set configMap.REDIS_CACHE_RETENTION="${{ secrets.REDIS_CACHE_RETENTION }}" \
-              --set configMap.REDIS_CACHE_SIZE="${{ secrets.REDIS_PASSWORD }}" \
+              --set configMap.REDIS_CACHE_SIZE="${{ secrets.REDIS_CACHE_SIZE }}" \
               --set configMap.ALMANAX_CRON_TAB="${{ secrets.ALMANAX_CRON_TAB }}" \
               --set configMap.UPDATE_SET_CRON_TAB="${{ secrets.UPDATE_SET_CRON_TAB }}" \
               --set configMap.HTTP_TIMEOUT="${{ secrets.HTTP_TIMEOUT }}" \

@@ -77,7 +77,7 @@ affinity: {}
 
 configMap:
   REDIS_CACHE_RETENTION: "60m"
-  REDIS_CACHE_SIZE: "1000"
+  REDIS_CACHE_SIZE: "1024"
   ALMANAX_CRON_TAB: "1 0 0 * * *"
   UPDATE_SET_CRON_TAB: "0 0 2 * * *"
   HTTP_TIMEOUT: "10s"
