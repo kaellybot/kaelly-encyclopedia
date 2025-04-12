@@ -1,7 +1,7 @@
 package entities
 
 type Almanax struct {
-	Day               int
-	Month             int
+	Day               int `gorm:"primaryKey"`
+	Month             int `gorm:"primaryKey"`
 	DofusDudeEffectID string
 }
