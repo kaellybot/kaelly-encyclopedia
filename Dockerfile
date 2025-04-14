@@ -1,13 +1,11 @@
 # Build stage
-FROM golang:1.24-alpine3.21 AS build
+FROM golang:1.24-alpine AS build
 
-WORKDIR /build
+WORKDIR /build/src
 COPY . .
-RUN go build -o app .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o app .
 
 # Final stage
-FROM gcr.io/distroless/static-debian12:latest
-
-WORKDIR /app
-COPY --from=build /build/app .
-CMD ["./app"]
+FROM scratch
+COPY --from=build /build/src/app /usr/bin/app
+ENTRYPOINT ["/usr/bin/app"]
