@@ -67,6 +67,12 @@ func (service *Impl) GetDatesByAlmanaxEffect(dofusDudeEffectID string) []time.Ti
 		}
 
 		date := time.Date(year, time.Month(entity.Month), entity.Day, 0, 0, 0, 0, time.UTC)
+
+		// Check if created date matches (29th february is not available every year for ex.)
+		if date.Year() != year || int(date.Month()) != entity.Month || date.Day() != entity.Day {
+			continue
+		}
+
 		dates = append(dates, date)
 	}
 
