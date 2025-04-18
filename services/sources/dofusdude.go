@@ -495,9 +495,23 @@ func (service *Impl) GetAlmanaxByDate(ctx context.Context, date time.Time, langu
 	}
 
 	if dodugoAlmanax == nil {
-		log.Warn().
+		currentYear := time.Now().Year()
+		if currentYear != date.Year() {
+			log.Warn().
+				Str(constants.LogDate, dodugoAlmanaxDate).
+				Msgf("DofusDude API returns 404 NOT_FOUND for specific date, continuing with closest date...")
+			fallbackDate := time.Date(currentYear, date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+			fallbackAlmanax, errFallback := service.GetAlmanaxByDate(ctx, fallbackDate, language)
+			if fallbackAlmanax != nil {
+				fallbackAlmanax.SetDate(dodugoAlmanaxDate)
+				service.putElementToCache(ctx, key, fallbackAlmanax)
+			}
+			return fallbackAlmanax, errFallback
+		}
+
+		log.Error().
 			Str(constants.LogDate, dodugoAlmanaxDate).
-			Msgf("DofusDude API returns 404 NOT_FOUND for specific date, continuing with nil almanax...")
+			Msgf("DofusDude API returns 404 NOT_FOUND for a close date, continuing with nil almanax...")
 	}
 
 	return dodugoAlmanax, nil
