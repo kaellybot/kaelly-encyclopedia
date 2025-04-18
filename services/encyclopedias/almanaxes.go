@@ -19,10 +19,9 @@ func (service *Impl) almanaxRequest(ctx amqp.Context, message *amqp.RabbitMQMess
 		return
 	}
 
-	log.Info().Str(constants.LogCorrelationID, ctx.CorrelationID).
-		Msgf("Get almanax encyclopedia request received")
-
-	almanax, err := service.sourceService.GetAlmanaxByDate(ctx, request.Date.AsTime(), lg)
+	// Only case where we need to retrieve the precise local date to have the right day (and so the almanax).
+	frenchDate := request.Date.AsTime().In(service.almanaxService.GetLocation())
+	almanax, err := service.sourceService.GetAlmanaxByDate(ctx, frenchDate, lg)
 	if err != nil {
 		log.Error().Str(constants.LogCorrelationID, ctx.CorrelationID).
 			Str(constants.LogDate, request.Date.String()).

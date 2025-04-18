@@ -16,6 +16,7 @@ var (
 
 type Service interface {
 	GetDatesByAlmanaxEffect(dofusDudeEffectID string) []time.Time
+	GetLocation() *time.Location
 }
 
 type Impl struct {

@@ -47,6 +47,10 @@ func New(scheduler gocron.Scheduler, frenchLocation *time.Location, repository r
 	return &service, nil
 }
 
+func (service *Impl) GetLocation() *time.Location {
+	return service.frenchLocation
+}
+
 func (service *Impl) GetDatesByAlmanaxEffect(dofusDudeEffectID string) []time.Time {
 	now := time.Now().UTC()
 	dates := make([]time.Time, 0)
