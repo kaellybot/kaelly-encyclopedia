@@ -84,7 +84,7 @@ func (service *Impl) getItemByQuery(ctx context.Context, query, correlationID,
 	}
 
 	if len(values) == 0 {
-		return nil, sources.ErrNotFound
+		return mappers.MapNoItem(query, amqp.ItemType_ANY_ITEM_TYPE), nil
 	}
 
 	// We trust the omnisearch by taking the first one in the list
@@ -92,7 +92,7 @@ func (service *Impl) getItemByQuery(ctx context.Context, query, correlationID,
 	itemType := service.sourceService.GetItemType(item.Type.GetNameId())
 	funcs, found := service.getItemByFuncs[itemType]
 	if !found {
-		return nil, sources.ErrNotFound
+		return nil, sources.ErrFuncNotFound
 	}
 
 	resp, err := funcs.GetItemByID(ctx, int64(item.GetAnkamaId()), correlationID, lg)

@@ -10,8 +10,55 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func MapEquipment(item *dodugo.Weapon, ingredientItems map[int32]*constants.Ingredient,
+func MapEquipment(query string, item *dodugo.Weapon, ingredientItems map[int32]*constants.Ingredient,
 	equipmentService equipments.Service) *amqp.EncyclopediaItemAnswer {
+	if item == nil {
+		return mapNilItem(query)
+	}
+
+	weaponEffects, effects := mapEffects(item.GetEffects())
+	recipe := mapRecipe(item.GetRecipe(), ingredientItems)
+	equipmentType := mapEquipmentType(item.GetType(), equipmentService)
+	icon := item.GetImageUrls().Icon
+	if item.GetImageUrls().Hq.IsSet() {
+		icon = item.GetImageUrls().Hq.Get()
+	}
+
+	return &amqp.EncyclopediaItemAnswer{
+		Type:  amqp.ItemType_EQUIPMENT_TYPE,
+		Query: query,
+		Equipment: &amqp.EncyclopediaItemAnswer_Equipment{
+			Id:          fmt.Sprintf("%v", item.GetAnkamaId()),
+			Name:        item.GetName(),
+			Description: item.GetDescription(),
+			Type: &amqp.EncyclopediaItemAnswer_Equipment_Type{
+				ItemType:       equipmentType.ItemID,
+				EquipmentType:  equipmentType.EquipmentID,
+				EquipmentLabel: *item.GetType().Name,
+			},
+			Icon:            *icon,
+			Level:           int64(item.GetLevel()),
+			Pods:            int64(item.GetPods()),
+			Set:             mapItemSet(item),
+			Characteristics: mapCharacteristics(item),
+			WeaponEffects:   weaponEffects,
+			Effects:         effects,
+			Conditions:      mapNullableConditions(item.Conditions),
+			Recipe:          recipe,
+		},
+		Source: constants.GetDofusDudeSource(),
+	}
+}
+
+func mapNilItem(query string) *amqp.EncyclopediaItemAnswer {
+	return &amqp.EncyclopediaItemAnswer{
+		Type:   amqp.ItemType_EQUIPMENT_TYPE,
+		Query:  query,
+		Source: constants.GetDofusDudeSource(),
+	}
+}
+
+func mapItemSet(item *dodugo.Weapon) *amqp.EncyclopediaItemAnswer_Equipment_SetFamily {
 	var set *amqp.EncyclopediaItemAnswer_Equipment_SetFamily
 	if item.HasParentSet() {
 		parentSet := item.GetParentSet()
@@ -21,9 +68,14 @@ func MapEquipment(item *dodugo.Weapon, ingredientItems map[int32]*constants.Ingr
 		}
 	}
 
+	return set
+}
+
+func mapEffects(allEffects []dodugo.Effect,
+) ([]*amqp.EncyclopediaItemAnswer_Effect, []*amqp.EncyclopediaItemAnswer_Effect) {
 	weaponEffects := make([]*amqp.EncyclopediaItemAnswer_Effect, 0)
 	effects := make([]*amqp.EncyclopediaItemAnswer_Effect, 0)
-	for _, effect := range item.GetEffects() {
+	for _, effect := range allEffects {
 		amqpEffect := &amqp.EncyclopediaItemAnswer_Effect{
 			Id:    fmt.Sprintf("%v", *effect.GetType().Id),
 			Label: effect.GetFormatted(),
@@ -36,10 +88,32 @@ func MapEquipment(item *dodugo.Weapon, ingredientItems map[int32]*constants.Ingr
 		}
 	}
 
-	var recipe *amqp.EncyclopediaItemAnswer_Recipe
-	if len(item.GetRecipe()) > 0 {
+	return weaponEffects, effects
+}
+
+func mapCharacteristics(item *dodugo.Weapon) *amqp.EncyclopediaItemAnswer_Equipment_Characteristics {
+	var characteristics *amqp.EncyclopediaItemAnswer_Equipment_Characteristics
+	if item.GetIsWeapon() {
+		characteristics = &amqp.EncyclopediaItemAnswer_Equipment_Characteristics{
+			Cost:           int64(item.GetApCost()),
+			MinRange:       int64(item.Range.GetMin()),
+			MaxRange:       int64(item.Range.GetMax()),
+			MaxCastPerTurn: int64(item.GetMaxCastPerTurn()),
+			CriticalRate:   int64(item.GetCriticalHitProbability()),
+			CriticalBonus:  int64(item.GetCriticalHitBonus()),
+			// TODO area
+		}
+	}
+
+	return characteristics
+}
+
+func mapRecipe(recipe []dodugo.Recipe, ingredientItems map[int32]*constants.Ingredient,
+) *amqp.EncyclopediaItemAnswer_Recipe {
+	var response *amqp.EncyclopediaItemAnswer_Recipe
+	if len(recipe) > 0 {
 		ingredients := make([]*amqp.EncyclopediaItemAnswer_Recipe_Ingredient, 0)
-		for _, recipeEntry := range item.GetRecipe() {
+		for _, recipeEntry := range recipe {
 			formattedItemIDString := fmt.Sprintf("%v", recipeEntry.GetItemAnkamaId())
 			ingredient, found := ingredientItems[recipeEntry.GetItemAnkamaId()]
 			if !found {
@@ -60,54 +134,12 @@ func MapEquipment(item *dodugo.Weapon, ingredientItems map[int32]*constants.Ingr
 			})
 		}
 
-		recipe = &amqp.EncyclopediaItemAnswer_Recipe{
+		response = &amqp.EncyclopediaItemAnswer_Recipe{
 			Ingredients: ingredients,
 		}
 	}
 
-	icon := item.GetImageUrls().Icon
-	if item.GetImageUrls().Hq.IsSet() {
-		icon = item.GetImageUrls().Hq.Get()
-	}
-
-	equipmentType := mapEquipmentType(item.GetType(), equipmentService)
-
-	var characteristics *amqp.EncyclopediaItemAnswer_Equipment_Characteristics
-	if item.GetIsWeapon() {
-		characteristics = &amqp.EncyclopediaItemAnswer_Equipment_Characteristics{
-			Cost:           int64(item.GetApCost()),
-			MinRange:       int64(item.Range.GetMin()),
-			MaxRange:       int64(item.Range.GetMax()),
-			MaxCastPerTurn: int64(item.GetMaxCastPerTurn()),
-			CriticalRate:   int64(item.GetCriticalHitProbability()),
-			CriticalBonus:  int64(item.GetCriticalHitBonus()),
-			// TODO area
-		}
-	}
-
-	return &amqp.EncyclopediaItemAnswer{
-		Type: amqp.ItemType_EQUIPMENT_TYPE,
-		Equipment: &amqp.EncyclopediaItemAnswer_Equipment{
-			Id:          fmt.Sprintf("%v", item.GetAnkamaId()),
-			Name:        item.GetName(),
-			Description: item.GetDescription(),
-			Type: &amqp.EncyclopediaItemAnswer_Equipment_Type{
-				ItemType:       equipmentType.ItemID,
-				EquipmentType:  equipmentType.EquipmentID,
-				EquipmentLabel: *item.GetType().Name,
-			},
-			Icon:            *icon,
-			Level:           int64(item.GetLevel()),
-			Pods:            int64(item.GetPods()),
-			Set:             set,
-			Characteristics: characteristics,
-			WeaponEffects:   weaponEffects,
-			Effects:         effects,
-			Conditions:      mapNullableConditions(item.Conditions),
-			Recipe:          recipe,
-		},
-		Source: constants.GetDofusDudeSource(),
-	}
+	return response
 }
 
 func mapNullableConditions(conditions dodugo.NullableConditionNode,

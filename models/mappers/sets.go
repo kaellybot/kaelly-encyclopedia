@@ -27,9 +27,17 @@ func MapSetList(dodugoSets []dodugo.ListEquipmentSet) *amqp.EncyclopediaListAnsw
 	}
 }
 
-func MapSet(set *dodugo.EquipmentSet, items map[int32]*dodugo.Weapon,
+func MapSet(query string, set *dodugo.EquipmentSet, items map[int32]*dodugo.Weapon,
 	icon string, equipmentService equipments.Service,
 ) *amqp.EncyclopediaItemAnswer {
+	if set == nil {
+		return &amqp.EncyclopediaItemAnswer{
+			Type:   amqp.ItemType_SET_TYPE,
+			Query:  query,
+			Source: constants.GetDofusDudeSource(),
+		}
+	}
+
 	equipments := make([]*amqp.EncyclopediaItemAnswer_Set_Equipment, 0)
 	for _, itemID := range set.GetEquipmentIds() {
 		formattedItemIDString := fmt.Sprintf("%v", itemID)
@@ -86,7 +94,8 @@ func MapSet(set *dodugo.EquipmentSet, items map[int32]*dodugo.Weapon,
 	})
 
 	return &amqp.EncyclopediaItemAnswer{
-		Type: amqp.ItemType_SET_TYPE,
+		Type:  amqp.ItemType_SET_TYPE,
+		Query: query,
 		Set: &amqp.EncyclopediaItemAnswer_Set{
 			Id:         fmt.Sprintf("%v", set.GetAnkamaId()),
 			Name:       set.GetName(),

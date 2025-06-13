@@ -22,7 +22,8 @@ const (
 )
 
 var (
-	ErrNotFound = errors.New("cannot find the desired resource")
+	ErrFuncNotFound = errors.New("no possibility to retrieve item")
+	ErrNotFound     = errors.New("cannot find the desired resource")
 )
 
 type GameEventHandler func(gameVersion string)

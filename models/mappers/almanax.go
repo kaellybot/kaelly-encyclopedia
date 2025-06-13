@@ -15,6 +15,18 @@ import (
 func MapAlmanaxEffects(request *amqp.EncyclopediaAlmanaxEffectRequest, effectName string,
 	dodugoAlmanaxes []*dodugo.Almanax, total int64, sourceService sources.Service,
 	language amqp.Language) *amqp.RabbitMQMessage {
+	if effectName == "" {
+		return &amqp.RabbitMQMessage{
+			Type:     amqp.RabbitMQMessage_ENCYCLOPEDIA_ALMANAX_EFFECT_ANSWER,
+			Status:   amqp.RabbitMQMessage_SUCCESS,
+			Language: language,
+			EncyclopediaAlmanaxEffectAnswer: &amqp.EncyclopediaAlmanaxEffectAnswer{
+				Query:  request.GetQuery(),
+				Source: constants.GetDofusDudeSource(),
+			},
+		}
+	}
+
 	almanaxes := make([]*amqp.Almanax, 0)
 	for _, dodugoAlmanax := range dodugoAlmanaxes {
 		almanax := MapAlmanax(dodugoAlmanax, sourceService)
@@ -36,12 +48,13 @@ func MapAlmanaxEffects(request *amqp.EncyclopediaAlmanaxEffectRequest, effectNam
 		Status:   amqp.RabbitMQMessage_SUCCESS,
 		Language: language,
 		EncyclopediaAlmanaxEffectAnswer: &amqp.EncyclopediaAlmanaxEffectAnswer{
-			Query:     effectName,
-			Almanaxes: almanaxes,
-			Page:      page,
-			Pages:     pages,
-			Total:     total,
-			Source:    constants.GetDofusDudeSource(),
+			Query:      request.Query,
+			EffectName: effectName,
+			Almanaxes:  almanaxes,
+			Page:       page,
+			Pages:      pages,
+			Total:      total,
+			Source:     constants.GetDofusDudeSource(),
 		},
 	}
 }

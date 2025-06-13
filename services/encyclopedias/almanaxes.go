@@ -2,11 +2,13 @@ package encyclopedias
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dofusdude/dodugo"
 	amqp "github.com/kaellybot/kaelly-amqp"
 	"github.com/kaellybot/kaelly-encyclopedia/models/constants"
 	"github.com/kaellybot/kaelly-encyclopedia/models/mappers"
+	"github.com/kaellybot/kaelly-encyclopedia/services/sources"
 	"github.com/rs/zerolog/log"
 )
 
@@ -49,6 +51,13 @@ func (service *Impl) almanaxEffectRequest(ctx amqp.Context, message *amqp.Rabbit
 
 	effect, errEffect := service.getEffectFromRequest(ctx, request, lg)
 	if errEffect != nil {
+		if errors.Is(errEffect, sources.ErrNotFound) {
+			response := mappers.MapAlmanaxEffects(request, "", nil, 0,
+				service.sourceService, message.Language)
+			service.replyWithSuceededAnswer(ctx, response)
+			return
+		}
+
 		log.Error().Str(constants.LogCorrelationID, ctx.CorrelationID).
 			Err(errEffect).
 			Str(constants.LogQueryID, request.Query).
@@ -119,7 +128,7 @@ func (service *Impl) getEffectFromRequest(ctx context.Context, request *amqp.Enc
 		}
 
 		if len(values) == 0 {
-			return nil, errResponseRequestEmpty
+			return nil, sources.ErrNotFound
 		}
 
 		// We trust the omnisearch by taking the first one in the list

@@ -5,6 +5,7 @@ import (
 
 	"github.com/dofusdude/dodugo"
 	amqp "github.com/kaellybot/kaelly-amqp"
+	"github.com/kaellybot/kaelly-encyclopedia/models/constants"
 	"github.com/kaellybot/kaelly-encyclopedia/models/entities"
 	"github.com/kaellybot/kaelly-encyclopedia/services/equipments"
 )
@@ -30,6 +31,14 @@ func MapItem(item *amqp.EncyclopediaItemAnswer, language amqp.Language) *amqp.Ra
 		Status:                 amqp.RabbitMQMessage_SUCCESS,
 		Language:               language,
 		EncyclopediaItemAnswer: item,
+	}
+}
+
+func MapNoItem(query string, itemType amqp.ItemType) *amqp.EncyclopediaItemAnswer {
+	return &amqp.EncyclopediaItemAnswer{
+		Type:   itemType,
+		Query:  query,
+		Source: constants.GetDofusDudeSource(),
 	}
 }
 

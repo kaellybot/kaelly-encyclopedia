@@ -2,6 +2,7 @@ package encyclopedias
 
 import (
 	"context"
+	"fmt"
 
 	amqp "github.com/kaellybot/kaelly-amqp"
 	"github.com/kaellybot/kaelly-encyclopedia/models/mappers"
@@ -9,13 +10,14 @@ import (
 
 func (service *Impl) getCosmeticByID(ctx context.Context, id int64, correlationID,
 	lg string) (*amqp.EncyclopediaItemAnswer, error) {
+	query := fmt.Sprintf("%v", id)
 	cosmetic, err := service.sourceService.GetCosmeticByID(ctx, id, lg)
 	if err != nil {
 		return nil, err
 	}
 
 	ingredients := service.getIngredients(ctx, cosmetic.GetRecipe(), correlationID, lg)
-	return mappers.MapEquipment(cosmetic, ingredients, service.equipmentService), nil
+	return mappers.MapEquipment(query, cosmetic, ingredients, service.equipmentService), nil
 }
 
 func (service *Impl) getCosmeticByQuery(ctx context.Context, query, correlationID,
@@ -26,5 +28,5 @@ func (service *Impl) getCosmeticByQuery(ctx context.Context, query, correlationI
 	}
 
 	ingredients := service.getIngredients(ctx, cosmetic.GetRecipe(), correlationID, lg)
-	return mappers.MapEquipment(cosmetic, ingredients, service.equipmentService), nil
+	return mappers.MapEquipment(query, cosmetic, ingredients, service.equipmentService), nil
 }
