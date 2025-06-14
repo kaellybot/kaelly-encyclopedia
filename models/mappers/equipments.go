@@ -2,10 +2,12 @@ package mappers
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/dofusdude/dodugo"
 	amqp "github.com/kaellybot/kaelly-amqp"
 	"github.com/kaellybot/kaelly-encyclopedia/models/constants"
+	"github.com/kaellybot/kaelly-encyclopedia/models/entities"
 	"github.com/kaellybot/kaelly-encyclopedia/services/equipments"
 	"github.com/rs/zerolog/log"
 )
@@ -40,7 +42,7 @@ func MapEquipment(query string, item *dodugo.Weapon, ingredientItems map[int32]*
 			Level:           int64(item.GetLevel()),
 			Pods:            int64(item.GetPods()),
 			Set:             mapItemSet(item),
-			Characteristics: mapCharacteristics(item),
+			Characteristics: mapCharacteristics(item, equipmentType, equipmentService),
 			WeaponEffects:   weaponEffects,
 			Effects:         effects,
 			Conditions:      mapNullableConditions(item.Conditions),
@@ -91,9 +93,22 @@ func mapEffects(allEffects []dodugo.Effect,
 	return weaponEffects, effects
 }
 
-func mapCharacteristics(item *dodugo.Weapon) *amqp.EncyclopediaItemAnswer_Equipment_Characteristics {
+func mapCharacteristics(item *dodugo.Weapon, itemType entities.EquipmentType, service equipments.Service,
+) *amqp.EncyclopediaItemAnswer_Equipment_Characteristics {
 	var characteristics *amqp.EncyclopediaItemAnswer_Equipment_Characteristics
 	if item.GetIsWeapon() {
+		areaEffectIDs := make([]string, 0)
+		for _, effect := range itemType.AreaEffects {
+			areaEffectIDs = append(areaEffectIDs, effect.ID)
+		}
+
+		particularEffectIDs := service.GetWeaponExceptions(item.GetAnkamaId())
+		for _, effectID := range particularEffectIDs {
+			if !slices.Contains(areaEffectIDs, effectID) {
+				areaEffectIDs = append(areaEffectIDs, effectID)
+			}
+		}
+
 		characteristics = &amqp.EncyclopediaItemAnswer_Equipment_Characteristics{
 			Cost:           int64(item.GetApCost()),
 			MinRange:       int64(item.Range.GetMin()),
@@ -101,7 +116,7 @@ func mapCharacteristics(item *dodugo.Weapon) *amqp.EncyclopediaItemAnswer_Equipm
 			MaxCastPerTurn: int64(item.GetMaxCastPerTurn()),
 			CriticalRate:   int64(item.GetCriticalHitProbability()),
 			CriticalBonus:  int64(item.GetCriticalHitBonus()),
-			// TODO area
+			AreaEffectIds:  areaEffectIDs,
 		}
 	}
 

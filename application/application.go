@@ -10,6 +10,7 @@ import (
 	equipmentRepo "github.com/kaellybot/kaelly-encyclopedia/repositories/equipments"
 	"github.com/kaellybot/kaelly-encyclopedia/repositories/games"
 	setRepo "github.com/kaellybot/kaelly-encyclopedia/repositories/sets"
+	"github.com/kaellybot/kaelly-encyclopedia/repositories/weapons"
 	"github.com/kaellybot/kaelly-encyclopedia/services/almanaxes"
 	"github.com/kaellybot/kaelly-encyclopedia/services/encyclopedias"
 	"github.com/kaellybot/kaelly-encyclopedia/services/equipments"
@@ -50,12 +51,13 @@ func New() (*Impl, error) {
 	// Repositories
 	almanaxRepo := almanaxRepo.New(db)
 	equipmentRepo := equipmentRepo.New(db)
+	weaponRepo := weapons.New(db)
 	setRepo := setRepo.New(db)
 	gameRepo := games.New(db)
 
 	// services
 	storeService := stores.New()
-	equipmentService, errEquipment := equipments.New(equipmentRepo)
+	equipmentService, errEquipment := equipments.New(equipmentRepo, weaponRepo)
 	if errEquipment != nil {
 		return nil, errEquipment
 	}

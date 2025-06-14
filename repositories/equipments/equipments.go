@@ -13,6 +13,7 @@ func (repo *Impl) GetEquipmentTypes() ([]entities.EquipmentType, error) {
 	var equipmentTypes []entities.EquipmentType
 	response := repo.db.GetDB().
 		Model(&entities.EquipmentType{}).
+		Preload("AreaEffects").
 		Find(&equipmentTypes)
 	return equipmentTypes, response.Error
 }
