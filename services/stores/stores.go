@@ -12,6 +12,7 @@ import (
 )
 
 func New() *Impl {
+	ttl := viper.GetDuration(constants.RedisCacheRetention)
 	return &Impl{
 		cache: cache.New(&cache.Options{
 			Redis: redis.NewClient(&redis.Options{
@@ -19,11 +20,9 @@ func New() *Impl {
 				Password: viper.GetString(constants.RedisPassword),
 				Addr:     viper.GetString(constants.RedisURL),
 			}),
-			LocalCache: cache.NewTinyLFU(
-				viper.GetInt(constants.RedisCacheSize),
-				viper.GetDuration(constants.RedisCacheRetention),
-			),
+			LocalCache: cache.NewTinyLFU(viper.GetInt(constants.RedisCacheSize), ttl),
 		}),
+		ttl: ttl,
 	}
 }
 
@@ -47,6 +46,7 @@ func (service *Impl) Set(ctx context.Context, key string, value any) error {
 		Ctx:   ctx,
 		Key:   buildKey(key),
 		Value: jsonValue,
+		TTL:   service.ttl,
 	})
 }
 

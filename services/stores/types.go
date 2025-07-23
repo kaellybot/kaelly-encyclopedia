@@ -2,6 +2,7 @@ package stores
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/cache/v9"
 )
@@ -13,4 +14,5 @@ type Service interface {
 
 type Impl struct {
 	cache *cache.Cache
+	ttl   time.Duration
 }
