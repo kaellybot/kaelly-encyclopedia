@@ -7,7 +7,7 @@ import (
 
 type Repository interface {
 	GetSets() ([]entities.Set, error)
-	Save(entity entities.Set) error
+	Sync(newSets []entities.Set, unsyncSetIDs, deletedSetIDs []string) error
 }
 
 type Impl struct {

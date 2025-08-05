@@ -1,9 +1,6 @@
 package mappers
 
 import (
-	"fmt"
-
-	"github.com/dofusdude/dodugo"
 	amqp "github.com/kaellybot/kaelly-amqp"
 	"github.com/kaellybot/kaelly-encyclopedia/models/constants"
 )
@@ -31,18 +28,15 @@ func MapGameNews(gameVersion string) *amqp.RabbitMQMessage {
 	}
 }
 
-func MapSetNews(sets []dodugo.ListEquipmentSet) *amqp.RabbitMQMessage {
-	setIDs := make([]string, 0)
-	for _, set := range sets {
-		setIDs = append(setIDs, fmt.Sprintf("%v", set.GetAnkamaId()))
-	}
-
+func MapSetNews(createdSetIDs, updatedSetIDs, deletedSetIDs []string) *amqp.RabbitMQMessage {
 	return &amqp.RabbitMQMessage{
 		Type:     amqp.RabbitMQMessage_NEWS_SET,
 		Language: amqp.Language_ANY,
 		Game:     amqp.Game_DOFUS_GAME,
 		NewsSetMessage: &amqp.NewsSetMessage{
-			SetIds: setIDs,
+			CreatedSetIds: createdSetIDs,
+			UpdatedSetIds: updatedSetIDs,
+			DeletedSetIds: deletedSetIDs,
 		},
 	}
 }

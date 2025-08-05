@@ -1,6 +1,8 @@
 package sets
 
 import (
+	"sync"
+
 	"github.com/kaellybot/kaelly-encyclopedia/models/entities"
 	repository "github.com/kaellybot/kaelly-encyclopedia/repositories/sets"
 	"github.com/kaellybot/kaelly-encyclopedia/services/equipments"
@@ -13,6 +15,7 @@ type Service interface {
 }
 
 type Impl struct {
+	mu               sync.RWMutex
 	sets             map[int64]entities.Set
 	newsService      news.Service
 	sourceService    sources.Service

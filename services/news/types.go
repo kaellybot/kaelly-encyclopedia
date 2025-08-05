@@ -1,7 +1,6 @@
 package news
 
 import (
-	"github.com/dofusdude/dodugo"
 	amqp "github.com/kaellybot/kaelly-amqp"
 )
 
@@ -14,7 +13,7 @@ const (
 type Service interface {
 	PublishAlmanaxNews(almanaxes []*amqp.NewsAlmanaxMessage_I18NAlmanax)
 	PublishGameNews(gameVersion string)
-	PublishSetNews(missingSets []dodugo.ListEquipmentSet)
+	PublishSetNews(createdSetIDs, updatedSetIDs, deletedSetIDs []string)
 }
 
 type Impl struct {

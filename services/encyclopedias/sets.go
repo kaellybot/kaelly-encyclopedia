@@ -73,9 +73,9 @@ func (service *Impl) getSetEquipments(ctx context.Context, set *dodugo.Equipment
 
 func (service *Impl) getSetIcon(setID int64) string {
 	setDB, found := service.setService.GetSetByDofusDude(setID)
-	if found {
+	if found && setDB.IsCurrent {
 		return setDB.Icon
 	}
 
-	return ""
+	return constants.SetImageFallbackURL
 }
